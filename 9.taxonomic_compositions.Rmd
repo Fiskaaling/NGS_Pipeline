@@ -10,7 +10,7 @@ output:
 knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
 
 ```
-In this section we prepare the data for creating taxonomic bar charts and phylogenetic trees.
+In this notebook we prepare the data for creating taxonomic bar charts and phylogenetic trees.
 
 First we make a taxmap object for easy filtering. The data table readable by "parse_tax_data" is built. Then the taxmap environment is created. 
 ```{r}

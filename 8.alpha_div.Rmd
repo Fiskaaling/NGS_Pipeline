@@ -33,7 +33,7 @@ Use the following chunk as an example for filtering data if necessary. There are
   filter(<your parameter2> == <"your value">) 
 ```
 
-Below is code used for creating alpha diversity plots. Parameters are defined in the first line. Here shannon is used as an example. Choose your own predictors.
+Below is code used for creating alpha diversity plots. Parameters are defined in the first line. Here Shannon is used as an example. Choose your own predictors.
 ```{r}
 ggplot(<xx_alpha_data>,aes(x=<Parameter1>, y=<xx_shannon>, col=<Parameter2>))+
   stat_summary(geom="errorbar", fun.data=mean_se, width=0) +

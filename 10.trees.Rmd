@@ -11,8 +11,8 @@ knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(w
 
 ```
 
-The trees are built from taxmap objects. As the previous notebook ("taxonomic_compositions.Rmd") describes how to make such an object, this is skipped here.
-In addtion to creating the taxmap object, summarised abundances are used to define the size and colour of tree nodes, and again, this is previously described.
+The trees are built from taxmap objects. As the previous notebook ("9.taxonomic_compositions.Rmd") describes how to make such an object, this is skipped here.
+In addition to creating the taxmap object, summarised abundances are used to define the size and colour of tree nodes, and again, this is previously described.
 
 
 
