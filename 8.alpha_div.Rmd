@@ -1,0 +1,69 @@
+---
+title: "Alpha diversity"
+output: 
+  pdf_document: 
+    keep_tex: yes
+---
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
+
+```
+
+
+This section is for preparing plots and calculating statistics for alpha-diversity.
+
+Join alpha diversity with metadata using the sample ID column from both data frames. When joining, first define the metadata column that will define which rows to take from the left joined alpha diversity data.
+```{r}
+<xx_alpha_data> <-metadata %>% 
+  left_join(xx_evenness, by=c("<sample ID column"="sample ID column>")) %>% 
+  left_join(xx_shannon, by=c("<sample ID column"="sample ID column>")) %>%
+  left_join(xx_observed_otus, by=c("<sample ID column"="sample ID column>")) %>% 
+  left_join(xx_faith, by=c("<sample ID column"="sample ID column>"))
+```
+
+Use the following chunk as an example for filtering data if necessary. There are two examples of how to filter in dplyr, adjust as needed.
+- The rows with "X" and "Y" in "Your parameter" column are kept
+- The rows with "your value" in the "Your parameter2" column are kept
+
+```{r}
+<xx_alpha_data_f> <-<xx_alpha_data> %>% 
+  filter(<your parameter> %in% c(<"X", "Y">)) %>% 
+  filter(<your parameter2> == <"your value">) 
+```
+
+Below is code used for creating alpha diversity plots. Parameters are defined in the first line. Here shannon is used as an example. Choose your own predictors.
+```{r}
+ggplot(<xx_alpha_data>,aes(x=<Parameter1>, y=<xx_shannon>, col=<Parameter2>))+
+  stat_summary(geom="errorbar", fun.data=mean_se, width=0) +
+  stat_summary(geom="line", fun.data=mean_se) +
+  stat_summary(geom="point", fun.data=mean_se) +
+  xlab("<Parameter1>") +
+  ylab("<Shannon>") +
+  theme_q2r() + 
+  scale_color_viridis_d(name="<Parameter2>")
+  ggsave("<name_of_choice>.jpg", height=3, width=4, device="jpg")
+```
+
+You can use an interaction model to check whether there were interacting effects between Parameters. If a significant effect is found, releveling can be used to determine which levels in a Parameter differ.
+
+```{r}
+#<xx_alpha_data$Parameter2> <-relevel(factor(<xx_alpha_data$Parameter2>),ref="<value>")
+<xx_shannonmod_int> <-lm(<xx_shannon>~<Parameter2>*<Parameter1>, data=<xx-alpha-data>)
+summary(<xx_shannonmod_int>)
+anova(<xx_shannonmod_int>)
+plot(<xx_shannonmod_int>) 
+```
+
+You can use an additive model to determine whether any of the parameters affect diversity. Again, releveling can be used for the post-hoc differences.
+```{r}
+#<xx_alpha_data$Parameter2> <-relevel(factor(<xx_alpha_data$Parameter2>),ref="<value>")
+<xx_shannonmod_add> <-lm(<xx_shannon>~<Parameter2+Parameter1>,data=<xx_alpha_data>)
+summary(<xx_shannonmod_add>)
+anova(<xx_shannonmod_add>)
+plot(<xx_shannonmod_add>) 
+```
+
+
+

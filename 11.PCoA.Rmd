@@ -1,0 +1,41 @@
+---
+title: "PCoA"
+output: 
+  pdf_document: 
+    keep_tex: yes
+---
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
+
+```
+In this section, we build beta diversity PCoA plots using the core metrics calculated in Qiime2.
+
+
+Make any character vectors in your metadata into factors for plotting purposes.
+```{r}
+metadata$<variable1> <-factor(metadata$<variable1>)
+metadata$<variable2> <-factor(metadata$<variable2>)
+metadata$<variable3> <-factor(metadata$<variable3>)
+```
+
+
+Here we plot the Weighted UniFrac metric as an example in the PC-plots. 
+ - Choose metadata variables for size and color differentiation. 
+ - Choose the beta diversity metric and the principal components you want to plot.
+ - Facet wrap by selected variable to combine plots.
+```{r}
+<xx_wunifrac>$data$Vectors %>%
+  select(SampleID, PC1, PC2, PC3) %>% 
+  left_join(metadata, by=c("SampleID"="<metadata sample ID>")) %>% 
+  ggplot(aes(x=PC1, y=PC2, color=<variable1>, size=<variable2>)) +
+  geom_point(alpha=0.5) +
+  theme_q2r() +
+  scale_size_discrete(name="<variable2>") +
+  scale_color_viridis_d(name="<variable1>") +
+  facet_wrap(.~<variable3>)
+#ggsave("PCoA_xx_wu.jpg", height=4.5, width=5.5, device="jpg")
+```
+
+

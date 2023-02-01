@@ -1,0 +1,123 @@
+---
+title: "Taxonomic compositions"
+output: 
+  pdf_document: 
+    keep_tex: yes
+---
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
+
+```
+In this section we prepare the data for creating taxonomic bar charts and phylogenetic trees.
+
+First we make a taxmap object for easy filtering. The data table readable by "parse_tax_data" is built. Then the taxmap environment is created. 
+```{r}
+
+<totaxmap_xx_rescript> <- <xx_table> %>%
+  as.data.frame() %>%
+  rownames_to_column("Feature.ID") %>%
+  left_join(<xx_taxonomy>) %>% 
+  mutate(Feature=Taxon)
+
+
+<xx_rescript_parsed> <-parse_tax_data(<totaxmap_xx_rescript>, class_cols="Taxon",class_sep=";",class_key=c(tax_rank="taxon_rank",tax_name="taxon_name"),class_regex = "^(.+)__(.+)")
+```
+
+Summarizing data for frequency barplot. The first line calculates total abundance of each taxon. The following lines allow you to sum the counts across your chosen variables.
+```{r}
+<xx_rescript_parsed>$data$taxon_counts <- calc_taxon_abund(<xx_rescript_parsed>, data = "tax_data")
+<xx_rescript_parsed>$data$taxon_counts$total <- rowSums(<xx_rescript_parsed>$data$taxon_counts[<column_no:column_no>]) # -1 = taxon_id column
+<xx_rescript_parsed>$data$taxon_counts$<totalA> <- rowSums(<xx_rescript_parsed>$data$taxon_counts[grep("<A>",names(<xx_rescript_parsed>$data$taxon_counts))]) 
+<xx_rescript_parsed>$data$taxon_counts$<totalB> <- rowSums(<xx_rescript_parsed>$data$taxon_counts[grep("<B>",names(<xx_rescript_parsed>$data$taxon_counts))])
+
+```
+
+Extract the taxon counts from the taxmap environment
+```{r}
+taxon_counts<- <xx_rescript_parsed>$data$taxon_counts
+```
+
+The taxmap environment is large and complex. Sometimes it can be helpful to print parts of it to see the data.
+```{r}
+print(<xx_rescript_parsed>$data$tax_data)
+```
+
+
+
+Your taxmap object can be taxonomically filtered based on taxon name or taxon rank.
+ - "subtaxa" is used to define whether subtaxa should be included in your filter.
+ - "invert" defines whether your filter includes or excludes taxa. TRUE means that you exclude what the filter finds.
+ - "supertaxa" defines whether to include or exclude supertaxa in your filtering.
+```{r}
+<filtered_xx> <- <xx_rescript_parsed> %>% 
+  filter_taxa(taxon_names == "<Animalia>", subtaxa = TRUE, invert=TRUE) %>%
+  filter_taxa(taxon_ranks == "<p>", supertaxa=FALSE) 
+ 
+```
+
+
+Look at your filtered data.
+```{r}
+print(<filtered_xx>$data$class_data)
+
+```
+
+
+Prepare data for bar chart:
+ - First join the taxon counts with the class data. 
+ - Filter to your desired taxonomic level. Here, we use phyla.
+ - Ensure the taxon ids are unique
+ - Calculate frequencies based on the summarised data.
+ - Finally use gather to make your data long with the chosen metadata in a column.
+ - In the gather function, define the name of your metadata column, the name of your values column, and which columns the data are in.
+```{r}
+counts<- <filtered_xx>$data$taxon_counts %>% 
+  left_join(<filtered_xx>$data$class_data, by=c("taxon_id"="taxon_id")) %>% 
+  filter(tax_rank=="<p>") %>% 
+  distinct(taxon_id, .keep_all = TRUE) %>% 
+  mutate(<sumA>=sum(<totalA>)) %>% 
+  mutate(<sumB>=sum(<totalB>)) %>% 
+  group_by(tax_name) %>% 
+  mutate(<freqA>=<totalA/sumA>) %>% 
+  mutate(<freqB>=<totalB/sumB>) %>% 
+  gather(<A and B parameter>, <frequency>, <column no:column no>)
+ 
+```
+
+Pool the smallest taxa to decrease the number of taxa in the plot. Set your own pooling threshold.
+```{r}
+xxpool<-counts %>% 
+  group_by(tax_name) %>% 
+  summarise(pool=max(frequency)< <value>,
+            mean=mean(frequency),
+            .groups="drop") 
+```
+
+Make a stacked frequency bar chart.
+ - First join your counts with your pooled taxa. Then, for the taxa that have been assigned to "pool", rename them to "Other".
+ - Summarise your frequencies by tax name and any other relevant variable. 
+ - Make the tax name variable a factor and sort by mean frequency.
+ - Make your plot.
+
+```{r,fig.width=4,fig.height=6}
+<xx_barchart> <- inner_join(counts,<xxpool>,by="tax_name") %>% 
+  mutate(tax_name=if_else(pool,"Other",tax_name)) %>% 
+  group_by(<variable>,tax_name) %>% 
+  summarise(frequency=sum(frequency),
+            mean = min(mean),
+            .groups = "drop") %>%
+  mutate(tax_name=factor(tax_name),
+         tax_name=fct_reorder(tax_name,mean,.desc = FALSE)) %>% 
+  ggplot(aes(x=<variable>, y=frequency, fill=tax_name))+
+  geom_col()+
+  scale_fill_brewer(palette = "Paired") +
+  theme_classic()+
+  labs(x="<Variable>",y="Proportion",fill="<your tax rank>") +
+  scale_x_discrete(labels = c('<A>','<B>')) 
+  #ggsave("<xx_bar>.tiff",dpi=300)
+  
+```
+
+

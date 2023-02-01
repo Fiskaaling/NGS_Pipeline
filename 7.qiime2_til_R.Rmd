@@ -1,0 +1,47 @@
+---
+title: "Packages and data"
+output: 
+  pdf_document: 
+    keep_tex: yes
+---
+
+This section is for opening packages and importing data.
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
+
+```
+
+
+The packages below are the ones used in the notebooks described in this project. 
+
+```{r, message=FALSE}
+library(tidyverse)
+library(qiime2R)
+library(metacoder)
+
+```
+
+Import your sample metadata.
+```{r, message=FALSE}
+metadata<-read_tsv("<your directory/sample-metadata.tsv>")
+```
+
+Import your taxonomy table, rooted tree, and feature table of choice.
+```{r}
+<xx_taxonomy> <-read_qza("<your directory/xx-taxonomy-rescript.qza>")$data
+<xx_rooted_tree> <-read_qza("<your directory/xx-rooted-tree.qza>")$data
+<xx_table> <-read_qza("<your directory/xx-table.qza>")$data
+```
+
+Import the relevant alpha diversity data for your needs. Name variable as needed and path as needed. The code creates the column "SampleID" from the row names in the data.
+```{r,message=FALSE}
+<xx_shannon> <-read_qza("<your directory/xx-core-metrics-results/shannon_vector.qza>")$data %>% rownames_to_column("SampleID")
+```
+
+Import the relevant Beta diversity data for your needs. Name variable as needed and path as needed. 
+```{r}
+<xx_wunifrac> <-read_qza("<your directory/xx-core-metrics-results/weighted_unifrac_pcoa_results.qza>")
+```
+

@@ -1,0 +1,46 @@
+---
+title: "Phylogenetic trees"
+output: 
+  pdf_document: 
+    keep_tex: yes
+---
+
+
+```{r, setup, include=FALSE}
+knitr::opts_chunk$set(message=FALSE, warning=FALSE, eval=FALSE, tidy.opts=list(width.cutoff=20), tidy=TRUE, wrap=TRUE)
+
+```
+
+The trees are built from taxmap objects. As the previous notebook ("taxonomic_compositions.Rmd") describes how to make such an object, this is skipped here.
+In addtion to creating the taxmap object, summarised abundances are used to define the size and colour of tree nodes, and again, this is previously described.
+
+
+
+Checking tables
+```{r}
+print(<xx_rescript_parsed>$data$taxon_counts)
+```
+
+
+Here we build a subtaxa tree. Empty nodes and specific taxa ranks are removed in order to make the tree readable and informative. Insert your summarized variable of choice.
+
+
+The filter_taxa line that defines the taxon ranks to exclude uses taxon rank data from the reference database. These vary, so the ranks available or how they are denoted may not be the same.
+```{r}
+subtaxa_tree <- <xx_rescript_parsed> %>% 
+  filter_taxa(taxon_names %in% c("<subtaxa of choice>"),
+              subtaxa=TRUE) %>% 
+  filter_taxa(<totalx> >0) %>%
+  filter_taxa(! taxon_ranks %in% c("d","k","ks","ps","p","c","o","sf","cs")) %>% 
+  heat_tree(node_label=taxon_names,
+            node_size=<totalx>,
+            node_color=<totalx>,
+            tree_label="<your label>",
+            node_label_size_range=c(0.015,0.04), #adjust size range as needed
+            node_size_range = c(0.007, 0.02), #adjust size range as needed
+            node_color_axis_label="Reads",
+            output_file="<subtaxa tree.tiff>")
+
+```
+
+
